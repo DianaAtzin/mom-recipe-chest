@@ -1,0 +1,26 @@
+{
+  "name": "mom-recipe-chest",
+  "version": "1.0.0",
+  "description": "A recipe manager with ingredient inventory.",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:css": "postcss src/styles.css -o dist/styles.css",
+    "lint": "prettier --check . && eslint ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "eslint-plugin-css-modules": "^2.12.0",
+    "nodemon": "^3.1.7",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.14"
+  }
+}
