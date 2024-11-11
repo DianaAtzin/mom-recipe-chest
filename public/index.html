@@ -6,8 +6,74 @@
   <title>Mom's Recipe Chest</title>
   <link href="output.css" rel="stylesheet">
 </head>
-<body>
-  <h1 class="text-3xl font-bold text-blue-900">Hello, My Tailwind CSS is working!</h1>
+<body class="bg-gray-100">
+  <!-- Header -->
+  <header class="bg-blue-900 text-white p-4 mb-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-3xl font-bold">Mom's Recipe Chest</h1>
+      <nav>
+        <a href="#" class="text-white font-medium mr-4">Recipes</a>
+        <a href="#" class="text-white font-medium">Inventory</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-4">
+    <!-- Welcome Message and Instructions -->
+    <section class="bg-white p-4 rounded shadow mb-4">
+      <h2 class="text-2xl font-semibold mb-2">Welcome to Mom's Recipe Chest!</h2>
+      <p class="mb-2">This app helps you manage your family recipes and keep track of your ingredient inventory. Here's how to get started:</p>
+      <ul class="list-disc list-inside mb-4">
+        <li>Use the <strong>Search</strong> bar to find recipes by name.</li>
+        <li>Click the <strong>Add Recipe</strong> form below to input your favorite recipes.</li>
+        <li>Switch to the <strong>Inventory</strong> tab to manage your ingredients and create shopping lists.</li>
+      </ul>
+    </section>
+
+    <!-- Search Bar -->
+    <div class="flex mb-4">
+      <input type="text" id="search-recipes" class="flex-grow p-2 border border-gray-300 rounded-l" placeholder="Search for a recipe..." />
+      <button class="bg-blue-500 text-white px-4 rounded-r hover:bg-blue-600">Search</button>
+    </div>
+
+    <!-- Add Recipe Form -->
+    <div class="bg-white p-4 rounded shadow mb-4">
+      <h2 class="text-xl font-semibold mb-2">Add a New Recipe</h2>
+      <form id="add-recipe-form">
+        <label for="recipe-name" class="block font-medium mb-1">Recipe Name</label>
+        <input type="text" id="recipe-name" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="Enter recipe name" required />
+
+        <label for="recipe-description" class="block font-medium mb-1">Description</label>
+        <textarea id="recipe-description" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="Enter a short description" required></textarea>
+
+        <label for="recipe-ingredients" class="block font-medium mb-1">Ingredients</label>
+        <input type="text" id="recipe-ingredients" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., 2 cups of flour, 1 cup of sugar" required />
+
+        <label for="recipe-instructions" class="block font-medium mb-1">Instructions</label>
+        <textarea id="recipe-instructions" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="Enter step-by-step instructions" required></textarea>
+
+        <label for="recipe-category" class="block font-medium mb-1">Category</label>
+        <input type="text" id="recipe-category" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., Main Course, Dessert" required />
+
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Recipe</button>
+      </form>
+    </div>
+
+    <!-- Recipe List -->
+    <div id="recipe-list" class="mt-4">
+      <!-- Recipes will be dynamically displayed here -->
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-blue-900 text-white p-4 mt-4">
+    <div class="container mx-auto text-center">
+      <p>&copy; 2024 Mom's Recipe Chest. All rights reserved.</p>
+    </div>
+  </footer>
+
   <script src="script.js"></script>
 </body>
 </html>
+
