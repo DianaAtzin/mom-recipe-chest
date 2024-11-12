@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inventory - Mom's Recipe Chest</title>
+  <link href="output.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+  <!-- Header -->
+  <header class="bg-blue-900 text-white p-4 mb-4">
+    <div class="container mx-auto flex justify-between items-center">
+      <h1 class="text-3xl font-bold">Mom's Recipe Chest</h1>
+      <nav>
+        <a href="index.html" class="text-white font-medium mr-4">Recipes</a>
+        <a href="inventory.html" class="text-white font-medium">Inventory</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <div class="container mx-auto p-4">
+    <!-- Welcome Message and Instructions -->
+    <section class="bg-white p-4 rounded shadow mb-4">
+      <h2 class="text-2xl font-semibold mb-2">Manage Your Ingredient Inventory</h2>
+      <p>Here, you can keep track of ingredients you have on hand, add new ones, and generate a shopping list based on recipes you want to make.</p>
+    </section>
+
+    <!-- Search and Add Ingredient Section -->
+    <div class="flex items-center mb-4">
+      <button class="bg-gray-300 text-black px-4 py-2 rounded-l">All</button>
+      <input type="text" id="search-ingredients" class="flex-grow p-2 border border-gray-300" placeholder="Search for an ingredient..." />
+      <button class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
+    </div>
+
+    <!-- Add Ingredient Form -->
+    <div class="bg-white p-4 rounded shadow mb-4">
+      <h2 class="text-xl font-semibold mb-2">Add a New Ingredient</h2>
+      <form id="add-ingredient-form">
+        <label for="ingredient-name" class="block font-medium mb-1">Ingredient Name</label>
+        <input type="text" id="ingredient-name" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="Enter ingredient name" required />
+
+        <label for="ingredient-quantity" class="block font-medium mb-1">Quantity</label>
+        <input type="text" id="ingredient-quantity" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., 2 lbs, 1 cup" required />
+
+        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Ingredient</button>
+      </form>
+    </div>
+
+    <!-- Inventory List -->
+    <div class="bg-white p-4 rounded shadow mb-4">
+      <h2 class="text-xl font-semibold mb-2">Inventory List</h2>
+      <div id="inventory-list" class="mt-4">
+        <!-- Ingredients will be dynamically displayed here -->
+      </div>
+    </div>
+
+    <!-- Generate Shopping List Section -->
+    <div class="bg-white p-4 rounded shadow mb-4">
+      <h2 class="text-xl font-semibold mb-2">Generate Shopping List</h2>
+      <button id="generate-shopping-list" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Generate Shopping List</button>
+      <div id="shopping-list" class="mt-4">
+        <!-- Generated shopping list will be displayed here -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-blue-900 text-white p-4 mt-4">
+    <div class="container mx-auto text-center">
+      <p>&copy; 2024 Mom's Recipe Chest. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="inventory.js"></script>
+</body>
+</html>

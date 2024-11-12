@@ -12,8 +12,8 @@
     <div class="container mx-auto flex justify-between items-center">
       <h1 class="text-3xl font-bold">Mom's Recipe Chest</h1>
       <nav>
-        <a href="#" class="text-white font-medium mr-4">Recipes</a>
-        <a href="#" class="text-white font-medium">Inventory</a>
+        <a href="index.html" class="text-white font-medium mr-4">Recipes</a>
+        <a href="inventory.html" class="text-white font-medium">Inventory</a>
       </nav>
     </div>
   </header>
@@ -31,11 +31,13 @@
       </ul>
     </section>
 
-    <!-- Search Bar -->
-    <div class="flex mb-4">
-      <input type="text" id="search-recipes" class="flex-grow p-2 border border-gray-300 rounded-l" placeholder="Search for a recipe..." />
-      <button class="bg-blue-500 text-white px-4 rounded-r hover:bg-blue-600">Search</button>
+    <!-- Search Bar for Recipes -->
+    <div class="flex items-center mb-4">
+      <button class="bg-gray-300 text-black px-4 py-2 rounded-l">All</button>
+        <input type="text" id="search-recipes" class="flex-grow p-2 border border-gray-300" placeholder="Search for a recipe by name, category, or ingredient..." />
+      <button class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
     </div>
+
 
     <!-- Add Recipe Form -->
     <div class="bg-white p-4 rounded shadow mb-4">
