@@ -63,7 +63,7 @@ let ingredientInventory = [
 // Root route
 // Serves as a welcome route for the app
 app.get('/', (req, res) => {
-    res.send('Welcome to Diana\'s Recipe Chest App');
+    res.send('Welcome to Diana\'s Recipe Chest App testing end points');
 });
 
 // ----- Recipes Routes ----- //
