@@ -25,7 +25,7 @@
       <h2 class="text-2xl font-semibold mb-2">Welcome to Mom's Recipe Chest!</h2>
       <p class="mb-2">This app helps you manage your family recipes and keep track of your ingredient inventory. Here's how to get started:</p>
       <ul class="list-disc list-inside mb-4">
-        <li>Use the <strong>Search</strong> bar to find recipes by name.</li>
+        <li>Use the <strong>Search</strong> bar to find recipes by name, category, or ingredient.</li>
         <li>Click the <strong>Add Recipe</strong> form below to input your favorite recipes.</li>
         <li>Switch to the <strong>Inventory</strong> tab to manage your ingredients and create shopping lists.</li>
       </ul>
@@ -33,10 +33,11 @@
 
     <!-- Search Bar for Recipes -->
     <div class="flex items-center mb-4">
-      <button class="bg-gray-300 text-black px-4 py-2 rounded-l">All</button>
-        <input type="text" id="search-recipes" class="flex-grow p-2 border border-gray-300" placeholder="Search for a recipe by name, category, or ingredient..." />
+      <button class="all-button bg-green-500 text-white px-4 py-2 rounded-l">All</button>
+      <input type="text" id="search-recipes" class="flex-grow p-2 border border-gray-300" placeholder="Search for a recipe by name, category, or ingredient..." />
       <button class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
     </div>
+    
 
 
     <!-- Add Recipe Form -->
