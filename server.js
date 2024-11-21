@@ -23,7 +23,7 @@ let recipes = [
             { ingredientName: "Cilantro", quantity: "1/4 cup" },
         ],
         instructions: "Marinate pork in the special sauce, grill, and serve with tortillas.",
-        category: "Main Course",
+        category: "Mexican",
     },
     {
         recipeID: 2,
@@ -40,7 +40,7 @@ let recipes = [
             { ingredientName: "Chopped cilantro", quantity: "2 tablespoons, optional for garnish" },
         ],
         instructions: "Cook chicken in the Instant Pot and mix with ingredients.",
-        category: "Main Course",
+        category: "Mexican",
     },
 ];
 
