@@ -1,37 +1,40 @@
-// Main Page Recipes Integration
 document.addEventListener("DOMContentLoaded", () => {
   const recipeList = document.getElementById("recipe-list");
-  const allButton = document.querySelector(".all-button"); // "All" button
+  const allButton = document.querySelector(".all-button");
   const searchInput = document.getElementById("search-recipes");
-  const addRecipeForm = document.getElementById("add-recipe-form");
+  const recipeForm = document.getElementById("add-recipe-form");
+  const formTitle = document.getElementById("form-title");
+  const formSubmitButton = document.getElementById("form-submit-button");
+  const cancelEditButton = document.getElementById("cancel-edit-button");
 
-  let allRecipes = []; // Store all recipes for search functionality
+  let allRecipes = []; // Store all recipes
+  let editingRecipeId = null; // Track editing state
 
   // Hide recipes by default
   recipeList.style.display = "none";
 
-  // Fetch recipes without displaying them
+  // Fetch recipes from the server (hidden on load)
   async function fetchRecipes() {
     try {
       const response = await fetch("/api/recipes");
-      allRecipes = await response.json(); // Store recipes for searching
+      allRecipes = await response.json();
+      console.log("Recipes fetched:", allRecipes);
     } catch (error) {
       console.error("Error fetching recipes:", error);
     }
   }
 
-  // Display multiple recipes (filtered or all)
+  // Display recipes in the list
   function displayRecipes(recipes) {
-    recipeList.innerHTML = ""; // Clear the list
+    recipeList.innerHTML = ""; // Clear existing recipes
 
     if (recipes.length === 0) {
-      // Display a no-results message if no recipes are found
       const noResultsMessage = document.createElement("div");
       noResultsMessage.classList.add("bg-yellow-100", "text-yellow-800", "p-4", "rounded", "shadow");
-      noResultsMessage.textContent = "No recipes match your search.Try using a different keyword or check out all recipes by clicking 'All' Button.";
+      noResultsMessage.textContent = "No recipes match your search.";
       recipeList.appendChild(noResultsMessage);
     } else {
-      recipes.forEach(recipe => {
+      recipes.forEach((recipe) => {
         const recipeDiv = document.createElement("div");
         recipeDiv.classList.add("bg-gray-200", "p-4", "mb-2", "rounded");
 
@@ -39,21 +42,22 @@ document.addEventListener("DOMContentLoaded", () => {
           <h3 class="text-lg font-bold">${recipe.name} (${recipe.category})</h3>
           <p>${recipe.description}</p>
           <ul class="list-disc list-inside">
-            ${recipe.ingredients.map(ing => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
+            ${recipe.ingredients.map((ing) => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
           </ul>
           <p><strong>Instructions:</strong> ${recipe.instructions}</p>
+          <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2" data-id="${recipe.id}">Edit</button>
         `;
-
         recipeList.appendChild(recipeDiv);
       });
     }
 
-    // Show or hide the recipe list based on content
-    recipeList.style.display = "block"; // Always show the container for feedback
+    recipeList.style.display = "block"; // Show recipes
   }
 
-  // Display a single recipe (e.g., newly added)
+  // Display only a single recipe (e.g., newly added or edited)
   function displaySingleRecipe(recipe) {
+    recipeList.innerHTML = ""; // Clear the list
+
     const recipeDiv = document.createElement("div");
     recipeDiv.classList.add("bg-gray-200", "p-4", "mb-2", "rounded");
 
@@ -61,89 +65,136 @@ document.addEventListener("DOMContentLoaded", () => {
       <h3 class="text-lg font-bold">${recipe.name} (${recipe.category})</h3>
       <p>${recipe.description}</p>
       <ul class="list-disc list-inside">
-        ${recipe.ingredients.map(ing => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
+        ${recipe.ingredients.map((ing) => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
       </ul>
       <p><strong>Instructions:</strong> ${recipe.instructions}</p>
     `;
 
     recipeList.appendChild(recipeDiv);
-    recipeList.style.display = "block"; // Show the recipe list
+    recipeList.style.display = "block"; // Show recipes
   }
 
-  // Search recipes based on input
-  function searchRecipes(query) {
-    const filteredRecipes = allRecipes.filter(recipe => {
-      const lowerQuery = query.toLowerCase();
+  // Open edit mode for a recipe
+  function openEditMode(recipe) {
+    console.log("Opening edit mode for recipe:", recipe);
+    editingRecipeId = recipe.id;
 
-      // Match by name, category, or ingredient
-      const matchesName = recipe.name.toLowerCase().includes(lowerQuery);
-      const matchesCategory = recipe.category.toLowerCase().includes(lowerQuery);
-      const matchesIngredient = recipe.ingredients.some(ing =>
-        ing.ingredientName.toLowerCase().includes(lowerQuery)
-      );
+    // Populate form fields with recipe data
+    document.getElementById("recipe-name").value = recipe.name;
+    document.getElementById("recipe-description").value = recipe.description;
+    document.getElementById("recipe-ingredients").value = recipe.ingredients
+      .map((ing) => `${ing.quantity} ${ing.ingredientName}`)
+      .join(", ");
+    document.getElementById("recipe-instructions").value = recipe.instructions;
+    document.getElementById("recipe-category").value = recipe.category;
 
-      return matchesName || matchesCategory || matchesIngredient;
-    });
-
-    displayRecipes(filteredRecipes); // Update the displayed recipes
+    // Update form UI
+    formTitle.textContent = "Edit Recipe";
+    formSubmitButton.textContent = "Save Changes";
+    cancelEditButton.classList.remove("hidden");
   }
 
-  // Show all recipes when "All" button is clicked
-  allButton.addEventListener("click", () => {
-    displayRecipes(allRecipes); // Show all recipes
-  });
+  // Close edit mode and reset form
+  function closeEditMode() {
+    console.log("Closing edit mode");
+    editingRecipeId = null;
+    formTitle.textContent = "Add a New Recipe";
+    formSubmitButton.textContent = "Add Recipe";
+    cancelEditButton.classList.add("hidden");
+    recipeForm.reset();
+  }
 
-  // Search recipes as user types
-  searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim();
-    if (query === "") {
-      recipeList.style.display = "none"; // Hide recipes if query is empty
-    } else {
-      searchRecipes(query); // Search recipes with the query
-    }
-  });
-
-  // Add a new recipe
-  addRecipeForm.addEventListener("submit", async (e) => {
+  // Submit the form (add or edit)
+  recipeForm.addEventListener("submit", async (e) => {
     e.preventDefault();
-    const newRecipe = {
+
+    const recipeData = {
       name: document.getElementById("recipe-name").value,
       description: document.getElementById("recipe-description").value,
-      ingredients: document.getElementById("recipe-ingredients").value.split(",").map(ing => {
+      ingredients: document.getElementById("recipe-ingredients").value.split(",").map((ing) => {
         const [quantity, ...name] = ing.trim().split(" ");
         return { ingredientName: name.join(" "), quantity };
       }),
       instructions: document.getElementById("recipe-instructions").value,
-      category: document.getElementById("recipe-category").value
+      category: document.getElementById("recipe-category").value,
     };
 
     try {
-      const response = await fetch("/api/recipes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newRecipe)
-      });
+      if (editingRecipeId) {
+        // Edit recipe
+        const response = await fetch(`/api/recipes/${editingRecipeId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(recipeData),
+        });
 
-      if (response.ok) {
-        const addedRecipe = await response.json();
+        if (response.ok) {
+          const updatedRecipe = await response.json();
+          const index = allRecipes.findIndex((r) => r.id === editingRecipeId);
+          allRecipes[index] = updatedRecipe;
 
-        // Add the new recipe to the local array
-        allRecipes.push(addedRecipe);
-
-        // Clear the list and display only the new recipe
-        recipeList.innerHTML = ""; // Clear the list
-        displaySingleRecipe(addedRecipe);
-
-        // Reset the form
-        addRecipeForm.reset();
+          displaySingleRecipe(updatedRecipe);
+          closeEditMode();
+        }
       } else {
-        console.error("Error adding recipe:", await response.text());
+        // Add recipe
+        const response = await fetch("/api/recipes", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(recipeData),
+        });
+
+        if (response.ok) {
+          const newRecipe = await response.json();
+          allRecipes.push(newRecipe);
+          displaySingleRecipe(newRecipe);
+          recipeForm.reset();
+        }
       }
     } catch (error) {
-      console.error("Error adding recipe:", error);
+      console.error("Error saving recipe:", error);
     }
   });
 
-  fetchRecipes(); // Load recipes into the array without displaying them
-});
+  // Cancel editing
+  cancelEditButton.addEventListener("click", closeEditMode);
 
+  // Search recipes
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+    if (query === "") {
+      recipeList.style.display = "none"; // Hide recipes if query is empty
+    } else {
+      const filteredRecipes = allRecipes.filter((recipe) => {
+        const matchesName = recipe.name.toLowerCase().includes(query);
+        const matchesCategory = recipe.category.toLowerCase().includes(query);
+        const matchesIngredient = recipe.ingredients.some((ing) =>
+          ing.ingredientName.toLowerCase().includes(query)
+        );
+        return matchesName || matchesCategory || matchesIngredient;
+      });
+
+      displayRecipes(filteredRecipes);
+    }
+  });
+
+  // Handle edit button clicks
+  recipeList.addEventListener("click", (e) => {
+    if (e.target.classList.contains("edit-button")) {
+      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
+      const recipe = allRecipes.find((r) => r.id === recipeId);
+
+      if (recipe) {
+        openEditMode(recipe);
+      }
+    }
+  });
+
+  // Show all recipes when "All" button is clicked
+  allButton.addEventListener("click", () => {
+    displayRecipes(allRecipes);
+  });
+
+  // Initial fetch of recipes
+  fetchRecipes();
+});
