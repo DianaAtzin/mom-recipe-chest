@@ -5,9 +5,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const recipeForm = document.getElementById("add-recipe-form");
   const formTitle = document.getElementById("form-title");
   const formSubmitButton = document.getElementById("form-submit-button");
+  const showFavoritesButton = document.getElementById("show-favorites");
 
-  let allRecipes = []; // Store recipes
-  let editingRecipeId = null; // Track editing state
+  let allRecipes = []; // Store all recipes
+  let editingRecipeId = null; // Track the recipe being edited
 
   // Hide recipes by default
   recipeList.style.display = "none";
@@ -38,17 +39,28 @@ document.addEventListener("DOMContentLoaded", () => {
         recipeDiv.classList.add("bg-gray-200", "p-4", "mb-2", "rounded");
 
         recipeDiv.innerHTML = `
-          <h3 class="text-lg font-bold">${recipe.name} (${recipe.category})</h3>
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold">${recipe.name} (${recipe.category})</h3>
+            <button class="favorite-button text-2xl ${
+              recipe.favorite ? "text-yellow-400" : "text-gray-400"
+            }" data-id="${recipe.id || recipe.recipeID}">
+              ★
+            </button>
+          </div>
           <p>${recipe.description}</p>
           <ul class="list-disc list-inside">
             ${recipe.ingredients.map((ing) => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
           </ul>
           <p class="mb-4"><strong>Instructions:</strong> ${recipe.instructions}</p>
           <div class="flex gap-4 mt-4">
-            <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${recipe.id || recipe.recipeID}">
+            <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${
+              recipe.id || recipe.recipeID
+            }">
               Edit
             </button>
-            <button class="delete-button bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${recipe.id || recipe.recipeID}">
+            <button class="delete-button bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${
+              recipe.id || recipe.recipeID
+            }">
               Delete
             </button>
           </div>
@@ -62,8 +74,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Open edit mode for a recipe
   function openEditMode(recipe) {
+    console.log("Opening edit mode for recipe:", recipe);
     editingRecipeId = recipe.id || recipe.recipeID;
 
+    // Populate form with recipe data
     document.getElementById("recipe-name").value = recipe.name;
     document.getElementById("recipe-description").value = recipe.description;
     document.getElementById("recipe-ingredients").value = recipe.ingredients
@@ -78,13 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Close edit mode and reset form
   function closeEditMode() {
+    console.log("Closing edit mode");
     editingRecipeId = null;
     formTitle.textContent = "Add a New Recipe";
     formSubmitButton.textContent = "Add Recipe";
     recipeForm.reset();
   }
 
-  // Submit the form (add or edit)
+  // Submit form (Add or Edit)
   recipeForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -101,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       if (editingRecipeId) {
-        // Edit recipe
+        console.log(`Saving edits for recipe ID: ${editingRecipeId}`);
         const response = await fetch(`/api/recipes/${editingRecipeId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -115,9 +130,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
           displayRecipes(allRecipes); // Refresh the recipe list
           closeEditMode();
+        } else {
+          console.error("Failed to update recipe:", await response.text());
         }
       } else {
-        // Add recipe
+        console.log("Adding new recipe");
         const response = await fetch("/api/recipes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -126,15 +143,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           const newRecipe = await response.json();
-
-          // Assign a unique ID if not provided by the server
-          if (!newRecipe.id && !newRecipe.recipeID) {
-            newRecipe.id = Date.now(); // Generate a unique ID
-          }
-
           allRecipes.push(newRecipe);
-          displayRecipes(allRecipes); // Show all recipes
+          displayRecipes(allRecipes); // Refresh list
           recipeForm.reset();
+        } else {
+          console.error("Failed to add recipe:", await response.text());
         }
       }
     } catch (error) {
@@ -142,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Delete a recipe
+  // Delete recipe
   recipeList.addEventListener("click", async (e) => {
     if (e.target.classList.contains("delete-button")) {
       const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
@@ -152,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           allRecipes = allRecipes.filter((r) => r.id !== recipeId && r.recipeID !== recipeId);
-          displayRecipes(allRecipes); // Refresh the list after deletion
+          displayRecipes(allRecipes); // Refresh list
         }
       } catch (error) {
         console.error("Error deleting recipe:", error);
@@ -160,39 +173,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle edit button clicks
-  recipeList.addEventListener("click", (e) => {
-    if (e.target.classList.contains("edit-button")) {
+  // Mark recipe as favorite
+  recipeList.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("favorite-button")) {
       const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
 
       const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
       if (recipe) {
-        openEditMode(recipe);
+        recipe.favorite = !recipe.favorite; // Toggle favorite
+        displayRecipes(allRecipes);
+
+        try {
+          await fetch(`/api/recipes/${recipeId}/favorite`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ favorite: recipe.favorite }),
+          });
+        } catch (error) {
+          console.error("Error updating favorite:", error);
+        }
       }
     }
+  });
+
+  // Show Favorites
+  showFavoritesButton.addEventListener("click", () => {
+    const favorites = allRecipes.filter((recipe) => recipe.favorite);
+    displayRecipes(favorites);
   });
 
   // Search recipes
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
+    const filteredRecipes = allRecipes.filter((recipe) => {
+      const matchesName = recipe.name.toLowerCase().includes(query);
+      const matchesCategory = recipe.category.toLowerCase().includes(query);
+      const matchesIngredient = recipe.ingredients.some((ing) =>
+        ing.ingredientName.toLowerCase().includes(query)
+      );
+      return matchesName || matchesCategory || matchesIngredient;
+    });
 
-    if (query === "") {
-      displayRecipes(allRecipes); // Show all recipes if query is empty
-    } else {
-      const filteredRecipes = allRecipes.filter((recipe) => {
-        const matchesName = recipe.name.toLowerCase().includes(query);
-        const matchesCategory = recipe.category.toLowerCase().includes(query);
-        const matchesIngredient = recipe.ingredients.some((ing) =>
-          ing.ingredientName.toLowerCase().includes(query)
-        );
-        return matchesName || matchesCategory || matchesIngredient;
-      });
-
-      displayRecipes(filteredRecipes); // Display filtered results
-    }
+    displayRecipes(filteredRecipes);
   });
 
-  // Show all recipes when "All" button is clicked
+  // Show all recipes
   allButton.addEventListener("click", () => {
     displayRecipes(allRecipes);
   });
