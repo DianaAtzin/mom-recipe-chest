@@ -7,13 +7,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const formSubmitButton = document.getElementById("form-submit-button");
   const cancelEditButton = document.getElementById("cancel-edit-button");
 
-  let allRecipes = []; // Store all recipes
+  let allRecipes = []; // Store recipes
   let editingRecipeId = null; // Track editing state
 
   // Hide recipes by default
   recipeList.style.display = "none";
 
-  // Fetch recipes from the server (hidden on load)
+  // Fetch recipes from the server
   async function fetchRecipes() {
     try {
       const response = await fetch("/api/recipes");
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Display recipes in the list
   function displayRecipes(recipes) {
-    recipeList.innerHTML = ""; // Clear existing recipes
+    recipeList.innerHTML = "";
 
     if (recipes.length === 0) {
       const noResultsMessage = document.createElement("div");
@@ -45,41 +45,20 @@ document.addEventListener("DOMContentLoaded", () => {
             ${recipe.ingredients.map((ing) => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
           </ul>
           <p><strong>Instructions:</strong> ${recipe.instructions}</p>
-          <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2" data-id="${recipe.id}">Edit</button>
+          <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2" data-id="${recipe.id || recipe.recipeID}">Edit</button>
         `;
         recipeList.appendChild(recipeDiv);
       });
     }
 
-    recipeList.style.display = "block"; // Show recipes
-  }
-
-  // Display only a single recipe (e.g., newly added or edited)
-  function displaySingleRecipe(recipe) {
-    recipeList.innerHTML = ""; // Clear the list
-
-    const recipeDiv = document.createElement("div");
-    recipeDiv.classList.add("bg-gray-200", "p-4", "mb-2", "rounded");
-
-    recipeDiv.innerHTML = `
-      <h3 class="text-lg font-bold">${recipe.name} (${recipe.category})</h3>
-      <p>${recipe.description}</p>
-      <ul class="list-disc list-inside">
-        ${recipe.ingredients.map((ing) => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
-      </ul>
-      <p><strong>Instructions:</strong> ${recipe.instructions}</p>
-    `;
-
-    recipeList.appendChild(recipeDiv);
-    recipeList.style.display = "block"; // Show recipes
+    recipeList.style.display = "block";
   }
 
   // Open edit mode for a recipe
   function openEditMode(recipe) {
     console.log("Opening edit mode for recipe:", recipe);
-    editingRecipeId = recipe.id;
+    editingRecipeId = recipe.id || recipe.recipeID;
 
-    // Populate form fields with recipe data
     document.getElementById("recipe-name").value = recipe.name;
     document.getElementById("recipe-description").value = recipe.description;
     document.getElementById("recipe-ingredients").value = recipe.ingredients
@@ -88,7 +67,6 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("recipe-instructions").value = recipe.instructions;
     document.getElementById("recipe-category").value = recipe.category;
 
-    // Update form UI
     formTitle.textContent = "Edit Recipe";
     formSubmitButton.textContent = "Save Changes";
     cancelEditButton.classList.remove("hidden");
@@ -130,10 +108,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           const updatedRecipe = await response.json();
-          const index = allRecipes.findIndex((r) => r.id === editingRecipeId);
+          const index = allRecipes.findIndex((r) => r.id === editingRecipeId || r.recipeID === editingRecipeId);
           allRecipes[index] = updatedRecipe;
 
-          displaySingleRecipe(updatedRecipe);
+          displayRecipes(allRecipes); // Refresh the recipe list
           closeEditMode();
         }
       } else {
@@ -147,7 +125,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (response.ok) {
           const newRecipe = await response.json();
           allRecipes.push(newRecipe);
-          displaySingleRecipe(newRecipe);
+          displayRecipes([newRecipe]); // Show only the new recipe
           recipeForm.reset();
         }
       }
@@ -162,6 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Search recipes
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
+
     if (query === "") {
       recipeList.style.display = "none"; // Hide recipes if query is empty
     } else {
@@ -174,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return matchesName || matchesCategory || matchesIngredient;
       });
 
-      displayRecipes(filteredRecipes);
+      displayRecipes(filteredRecipes); // Display filtered results
     }
   });
 
@@ -182,10 +161,18 @@ document.addEventListener("DOMContentLoaded", () => {
   recipeList.addEventListener("click", (e) => {
     if (e.target.classList.contains("edit-button")) {
       const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
-      const recipe = allRecipes.find((r) => r.id === recipeId);
+
+      if (isNaN(recipeId)) {
+        console.error("Invalid recipe ID:", e.target.getAttribute("data-id"));
+        return;
+      }
+
+      const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
 
       if (recipe) {
         openEditMode(recipe);
+      } else {
+        console.error("Recipe not found for ID:", recipeId);
       }
     }
   });
@@ -195,6 +182,6 @@ document.addEventListener("DOMContentLoaded", () => {
     displayRecipes(allRecipes);
   });
 
-  // Initial fetch of recipes
+  // Fetch recipes on page load
   fetchRecipes();
 });
