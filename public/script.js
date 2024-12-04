@@ -44,14 +44,14 @@ document.addEventListener("DOMContentLoaded", () => {
             ${recipe.ingredients.map((ing) => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
           </ul>
           <p class="mb-4"><strong>Instructions:</strong> ${recipe.instructions}</p>
-        <div class="flex gap-4 mt-4">
-          <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${recipe.id || recipe.recipeID}">
-            Edit
-          </button>
-          <button class="delete-button bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${recipe.id || recipe.recipeID}">
-            Delete
-          </button>
-        </div>
+          <div class="flex gap-4 mt-4">
+            <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${recipe.id || recipe.recipeID}">
+              Edit
+            </button>
+            <button class="delete-button bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${recipe.id || recipe.recipeID}">
+              Delete
+            </button>
+          </div>
         `;
         recipeList.appendChild(recipeDiv);
       });
@@ -133,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
 
           allRecipes.push(newRecipe);
-          displayRecipes([newRecipe]); // Show only the new recipe
+          displayRecipes(allRecipes); // Show all recipes
           recipeForm.reset();
         }
       }
@@ -147,22 +147,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.classList.contains("delete-button")) {
       const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
 
-      if (isNaN(recipeId)) {
-        console.error("Invalid recipe ID:", e.target.getAttribute("data-id"));
-        return;
-      }
-
       try {
-        const response = await fetch(`/api/recipes/${recipeId}`, {
-          method: "DELETE",
-        });
+        const response = await fetch(`/api/recipes/${recipeId}`, { method: "DELETE" });
 
         if (response.ok) {
           allRecipes = allRecipes.filter((r) => r.id !== recipeId && r.recipeID !== recipeId);
           displayRecipes(allRecipes); // Refresh the list after deletion
-          console.log(`Recipe with ID ${recipeId} deleted`);
-        } else {
-          console.error(`Failed to delete recipe with ID ${recipeId}`);
         }
       } catch (error) {
         console.error("Error deleting recipe:", error);
@@ -175,17 +165,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.classList.contains("edit-button")) {
       const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
 
-      if (isNaN(recipeId)) {
-        console.error("Invalid recipe ID:", e.target.getAttribute("data-id"));
-        return;
-      }
-
       const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
-
       if (recipe) {
         openEditMode(recipe);
-      } else {
-        console.error("Recipe not found for ID:", recipeId);
       }
     }
   });
@@ -195,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const query = searchInput.value.trim().toLowerCase();
 
     if (query === "") {
-      recipeList.style.display = "none"; // Hide recipes if query is empty
+      displayRecipes(allRecipes); // Show all recipes if query is empty
     } else {
       const filteredRecipes = allRecipes.filter((recipe) => {
         const matchesName = recipe.name.toLowerCase().includes(query);

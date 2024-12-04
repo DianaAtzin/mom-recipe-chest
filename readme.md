@@ -44,6 +44,6 @@ Here are 15 JavaScript-based requirements:
 11. **Shopping List Generator** - Generate a shopping list of missing ingredients for selected recipes.
 12. **Adjust Ingredient Quantities** - Change quantities in a recipe based on serving size.
 13. **Visual Inventory Alerts** - Highlight ingredients with low stock in red or with icons.
-14. **Data Persistence with Local Storage** - Store recipes and inventory locally for app continuity.
+14. **Display all** - Show a complete recipe list.
 15. **Recipe Sorting Options** - Sort recipes by name, category, or favorites.
 

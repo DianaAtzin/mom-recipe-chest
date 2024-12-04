@@ -24,6 +24,7 @@ let recipes = [
         ],
         instructions: "Marinate pork in the special sauce, grill, and serve with tortillas.",
         category: "Mexican",
+        favorite: false, // New property for favorite recipes
     },
     {
         recipeID: 2,
@@ -41,6 +42,7 @@ let recipes = [
         ],
         instructions: "Cook chicken in the Instant Pot and mix with ingredients.",
         category: "Mexican",
+        favorite: true, // New property for favorite recipes
     },
 ];
 
@@ -117,6 +119,21 @@ app.delete('/api/recipes/:id', (req, res) => {
     recipes.splice(recipeIndex, 1);
     res.status(204).send();
 });
+
+// PUT favorite recipes
+// Updates the favorite status of a recipe by its ID
+app.put('/api/recipes/:id/favorite', (req, res) => {
+    const recipeID = parseInt(req.params.id, 10);
+    const recipe = recipes.find((r) => r.recipeID === recipeID);
+
+    if (recipe) {
+        recipe.favorite = req.body.favorite;
+        res.status(200).json(recipe);
+    } else {
+        res.status(404).send("Recipe not found");
+    }
+});
+
 
 // ----- Inventory Routes ----- //
 
