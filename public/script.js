@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const recipeForm = document.getElementById("add-recipe-form");
   const formTitle = document.getElementById("form-title");
   const formSubmitButton = document.getElementById("form-submit-button");
-  //const cancelEditButton = document.getElementById("cancel-edit-button");
 
   let allRecipes = []; // Store recipes
   let editingRecipeId = null; // Track editing state
@@ -44,8 +43,15 @@ document.addEventListener("DOMContentLoaded", () => {
           <ul class="list-disc list-inside">
             ${recipe.ingredients.map((ing) => `<li>${ing.quantity} ${ing.ingredientName}</li>`).join("")}
           </ul>
-          <p><strong>Instructions:</strong> ${recipe.instructions}</p>
-          <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2" data-id="${recipe.id || recipe.recipeID}">Edit</button>
+          <p class="mb-4"><strong>Instructions:</strong> ${recipe.instructions}</p>
+        <div class="flex gap-4 mt-4">
+          <button class="edit-button bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600" data-id="${recipe.id || recipe.recipeID}">
+            Edit
+          </button>
+          <button class="delete-button bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600" data-id="${recipe.id || recipe.recipeID}">
+            Delete
+          </button>
+        </div>
         `;
         recipeList.appendChild(recipeDiv);
       });
@@ -56,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Open edit mode for a recipe
   function openEditMode(recipe) {
-    console.log("Opening edit mode for recipe:", recipe);
     editingRecipeId = recipe.id || recipe.recipeID;
 
     document.getElementById("recipe-name").value = recipe.name;
@@ -69,16 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     formTitle.textContent = "Edit Recipe";
     formSubmitButton.textContent = "Save Changes";
-    cancelEditButton.classList.remove("hidden");
   }
 
   // Close edit mode and reset form
   function closeEditMode() {
-    console.log("Closing edit mode");
     editingRecipeId = null;
     formTitle.textContent = "Add a New Recipe";
     formSubmitButton.textContent = "Add Recipe";
-    //cancelEditButton.classList.add("hidden");
     recipeForm.reset();
   }
 
@@ -124,6 +126,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           const newRecipe = await response.json();
+
+          // Assign a unique ID if not provided by the server
+          if (!newRecipe.id && !newRecipe.recipeID) {
+            newRecipe.id = Date.now(); // Generate a unique ID
+          }
+
           allRecipes.push(newRecipe);
           displayRecipes([newRecipe]); // Show only the new recipe
           recipeForm.reset();
@@ -134,26 +142,31 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Cancel editing
-  //cancelEditButton.addEventListener("click", closeEditMode);
+  // Delete a recipe
+  recipeList.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("delete-button")) {
+      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
 
-  // Search recipes
-  searchInput.addEventListener("input", () => {
-    const query = searchInput.value.trim().toLowerCase();
+      if (isNaN(recipeId)) {
+        console.error("Invalid recipe ID:", e.target.getAttribute("data-id"));
+        return;
+      }
 
-    if (query === "") {
-      recipeList.style.display = "none"; // Hide recipes if query is empty
-    } else {
-      const filteredRecipes = allRecipes.filter((recipe) => {
-        const matchesName = recipe.name.toLowerCase().includes(query);
-        const matchesCategory = recipe.category.toLowerCase().includes(query);
-        const matchesIngredient = recipe.ingredients.some((ing) =>
-          ing.ingredientName.toLowerCase().includes(query)
-        );
-        return matchesName || matchesCategory || matchesIngredient;
-      });
+      try {
+        const response = await fetch(`/api/recipes/${recipeId}`, {
+          method: "DELETE",
+        });
 
-      displayRecipes(filteredRecipes); // Display filtered results
+        if (response.ok) {
+          allRecipes = allRecipes.filter((r) => r.id !== recipeId && r.recipeID !== recipeId);
+          displayRecipes(allRecipes); // Refresh the list after deletion
+          console.log(`Recipe with ID ${recipeId} deleted`);
+        } else {
+          console.error(`Failed to delete recipe with ID ${recipeId}`);
+        }
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+      }
     }
   });
 
@@ -174,6 +187,26 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         console.error("Recipe not found for ID:", recipeId);
       }
+    }
+  });
+
+  // Search recipes
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.trim().toLowerCase();
+
+    if (query === "") {
+      recipeList.style.display = "none"; // Hide recipes if query is empty
+    } else {
+      const filteredRecipes = allRecipes.filter((recipe) => {
+        const matchesName = recipe.name.toLowerCase().includes(query);
+        const matchesCategory = recipe.category.toLowerCase().includes(query);
+        const matchesIngredient = recipe.ingredients.some((ing) =>
+          ing.ingredientName.toLowerCase().includes(query)
+        );
+        return matchesName || matchesCategory || matchesIngredient;
+      });
+
+      displayRecipes(filteredRecipes); // Display filtered results
     }
   });
 
