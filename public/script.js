@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const recipeForm = document.getElementById("add-recipe-form");
   const formTitle = document.getElementById("form-title");
   const formSubmitButton = document.getElementById("form-submit-button");
-  const cancelEditButton = document.getElementById("cancel-edit-button");
+  //const cancelEditButton = document.getElementById("cancel-edit-button");
 
   let allRecipes = []; // Store recipes
   let editingRecipeId = null; // Track editing state
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editingRecipeId = null;
     formTitle.textContent = "Add a New Recipe";
     formSubmitButton.textContent = "Add Recipe";
-    cancelEditButton.classList.add("hidden");
+    //cancelEditButton.classList.add("hidden");
     recipeForm.reset();
   }
 
@@ -135,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Cancel editing
-  cancelEditButton.addEventListener("click", closeEditMode);
+  //cancelEditButton.addEventListener("click", closeEditMode);
 
   // Search recipes
   searchInput.addEventListener("input", () => {
