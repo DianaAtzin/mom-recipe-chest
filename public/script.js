@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let allRecipes = []; // Store all recipes
   let editingRecipeId = null; // Track the recipe being edited
 
-  // Hide recipes by default
+  // Hide recipes by default on page load
   recipeList.style.display = "none";
 
   // Fetch recipes from the server
@@ -69,37 +69,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    recipeList.style.display = "block";
+    recipeList.style.display = "block"; // Ensure recipes are shown after rendering
   }
 
-  // Open edit mode for a recipe
-  function openEditMode(recipe) {
-    console.log("Opening edit mode for recipe:", recipe);
-    editingRecipeId = recipe.id || recipe.recipeID;
-
-    // Populate form with recipe data
-    document.getElementById("recipe-name").value = recipe.name;
-    document.getElementById("recipe-description").value = recipe.description;
-    document.getElementById("recipe-ingredients").value = recipe.ingredients
-      .map((ing) => `${ing.quantity} ${ing.ingredientName}`)
-      .join(", ");
-    document.getElementById("recipe-instructions").value = recipe.instructions;
-    document.getElementById("recipe-category").value = recipe.category;
-
-    formTitle.textContent = "Edit Recipe";
-    formSubmitButton.textContent = "Save Changes";
-  }
-
-  // Close edit mode and reset form
-  function closeEditMode() {
-    console.log("Closing edit mode");
-    editingRecipeId = null;
-    formTitle.textContent = "Add a New Recipe";
-    formSubmitButton.textContent = "Add Recipe";
-    recipeForm.reset();
-  }
-
-  // Submit form (Add or Edit)
+  // Add or Edit Recipe
   recipeForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -112,11 +85,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }),
       instructions: document.getElementById("recipe-instructions").value,
       category: document.getElementById("recipe-category").value,
+      favorite: false, // Default to not favorite
     };
 
     try {
       if (editingRecipeId) {
-        console.log(`Saving edits for recipe ID: ${editingRecipeId}`);
+        // Edit existing recipe
         const response = await fetch(`/api/recipes/${editingRecipeId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -125,16 +99,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           const updatedRecipe = await response.json();
-          const index = allRecipes.findIndex((r) => r.id === editingRecipeId || r.recipeID === editingRecipeId);
-          allRecipes[index] = updatedRecipe;
-
+          allRecipes = allRecipes.map((r) =>
+            r.id === editingRecipeId || r.recipeID === editingRecipeId ? updatedRecipe : r
+          );
           displayRecipes(allRecipes); // Refresh the recipe list
-          closeEditMode();
-        } else {
-          console.error("Failed to update recipe:", await response.text());
+          editingRecipeId = null; // Reset editing state
+          formTitle.textContent = "Add a New Recipe";
+          formSubmitButton.textContent = "Add Recipe";
+          recipeForm.reset();
         }
       } else {
-        console.log("Adding new recipe");
+        // Add new recipe
         const response = await fetch("/api/recipes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -144,10 +119,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (response.ok) {
           const newRecipe = await response.json();
           allRecipes.push(newRecipe);
-          displayRecipes(allRecipes); // Refresh list
+          displayRecipes(allRecipes); // Refresh the recipe list
           recipeForm.reset();
-        } else {
-          console.error("Failed to add recipe:", await response.text());
         }
       }
     } catch (error) {
@@ -155,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Delete recipe
+  // Delete a recipe
   recipeList.addEventListener("click", async (e) => {
     if (e.target.classList.contains("delete-button")) {
       const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
@@ -165,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           allRecipes = allRecipes.filter((r) => r.id !== recipeId && r.recipeID !== recipeId);
-          displayRecipes(allRecipes); // Refresh list
+          displayRecipes(allRecipes); // Refresh the list
         }
       } catch (error) {
         console.error("Error deleting recipe:", error);
@@ -196,11 +169,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Show Favorites
-  showFavoritesButton.addEventListener("click", () => {
-    const favorites = allRecipes.filter((recipe) => recipe.favorite);
-    displayRecipes(favorites);
+  // Handle edit button clicks
+  recipeList.addEventListener("click", (e) => {
+    if (e.target.classList.contains("edit-button")) {
+      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
+
+      const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
+
+      if (recipe) {
+        openEditForm(recipe);
+      } else {
+        console.error("Recipe not found for ID:", recipeId);
+      }
+    }
   });
+
+  // Open edit form with recipe data
+  function openEditForm(recipe) {
+    editingRecipeId = recipe.id || recipe.recipeID;
+
+    document.getElementById("recipe-name").value = recipe.name;
+    document.getElementById("recipe-description").value = recipe.description;
+    document.getElementById("recipe-ingredients").value = recipe.ingredients
+      .map((ing) => `${ing.quantity} ${ing.ingredientName}`)
+      .join(", ");
+    document.getElementById("recipe-instructions").value = recipe.instructions;
+    document.getElementById("recipe-category").value = recipe.category;
+
+    formTitle.textContent = "Edit Recipe";
+    formSubmitButton.textContent = "Save Changes";
+  }
 
   // Search recipes
   searchInput.addEventListener("input", () => {
@@ -222,6 +220,12 @@ document.addEventListener("DOMContentLoaded", () => {
     displayRecipes(allRecipes);
   });
 
-  // Fetch recipes on page load
+  // Show favorite recipes
+  showFavoritesButton.addEventListener("click", () => {
+    const favorites = allRecipes.filter((recipe) => recipe.favorite);
+    displayRecipes(favorites);
+  });
+
+  // Fetch and display recipes on page load
   fetchRecipes();
 });
