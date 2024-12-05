@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+  // DOM Elements for Instructions
+  const toggleInstructionsButton = document.getElementById("toggle-instructions");
+  const instructionsList = document.getElementById("instructions-list");
+   // DOM Elements for Recipes
   const recipeList = document.getElementById("recipe-list");
   const allButton = document.querySelector(".all-button");
   const searchInput = document.getElementById("search-recipes");
@@ -13,6 +17,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let allRecipes = []; // Store all recipes
   let editingRecipeId = null; // Track the recipe being edited
+
+  // Section: Instructions Toggle
+   toggleInstructionsButton.addEventListener("click", () => {
+    instructionsList.classList.toggle("hidden"); // Show or hide the instructions
+  });
 
   // Hide the recipe list and form by default
   recipeList.style.display = "none";
