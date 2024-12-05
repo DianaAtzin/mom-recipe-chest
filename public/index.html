@@ -40,14 +40,25 @@
       <button class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
     </div>
 
-    <!-- Favorites Filter and Add Recipe Button -->
-    <div class="flex justify-end gap-4 mb-4">
-      <button id="show-favorites" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
-        Show Favorites
-      </button>
-      <button id="show-add-form" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
-        Add Recipe
-      </button>
+    <!-- Filter by Category, Favorites, and Add Recipe -->
+    <div class="flex justify-between items-center mb-4">
+      <!-- Filter by Category Dropdown -->
+        <!-- Dropdown for Categories -->
+          <div class="flex items-center mb-4">
+            <select id="category-dropdown" class="p-2 border border-gray-300 rounded">
+              <option value="">All Categories</option>
+            </select>
+          </div>
+
+      <!-- Buttons for Favorites and Adding Recipes -->
+      <div class="flex gap-4">
+        <button id="show-favorites" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
+          Show Favorites
+        </button>
+        <button id="show-add-form" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+          Add Recipe
+        </button>
+      </div>
     </div>
 
     <!-- Add/Edit Recipe Form (Hidden Initially) -->
@@ -67,7 +78,7 @@
         <textarea id="recipe-instructions" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="Enter step-by-step instructions" required></textarea>
 
         <label for="recipe-category" class="block font-medium mb-1">Category</label>
-        <input type="text" id="recipe-category" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., Main Course, Dessert" required />
+        <input type="text" id="recipe-category" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., Breakfast, Lunch" required />
 
         <div class="flex gap-4">
           <button type="submit" id="form-submit-button" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Recipe</button>

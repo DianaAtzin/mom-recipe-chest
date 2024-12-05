@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const formTitle = document.getElementById("form-title");
   const formSubmitButton = document.getElementById("form-submit-button");
   const cancelFormButton = document.getElementById("cancel-form");
+  const categoryDropdown = document.getElementById("category-dropdown");
 
   let allRecipes = []; // Store all recipes
   let editingRecipeId = null; // Track the recipe being edited
@@ -17,12 +18,31 @@ document.addEventListener("DOMContentLoaded", () => {
   recipeList.style.display = "none";
   recipeFormContainer.classList.add("hidden");
 
+  // Function to toggle the form visibility
+  function toggleForm(show, isEdit = false) {
+    if (show) {
+      recipeFormContainer.classList.remove("hidden");
+      if (isEdit) {
+        formTitle.textContent = "Edit Recipe";
+        formSubmitButton.textContent = "Save Changes";
+      } else {
+        formTitle.textContent = "Add a New Recipe";
+        formSubmitButton.textContent = "Add Recipe";
+        recipeForm.reset(); // Clear the form for new input
+      }
+    } else {
+      recipeFormContainer.classList.add("hidden");
+      editingRecipeId = null; // Reset editing state
+    }
+  }
+
   // Fetch recipes from the server
   async function fetchRecipes() {
     try {
       const response = await fetch("/api/recipes");
       allRecipes = await response.json();
       console.log("Recipes fetched:", allRecipes);
+      updateCategoryDropdown(); // Update dropdown with categories
     } catch (error) {
       console.error("Error fetching recipes:", error);
     }
@@ -72,22 +92,16 @@ document.addEventListener("DOMContentLoaded", () => {
     recipeList.style.display = "block";
   }
 
-  // Toggle Add/Edit Form
-  function toggleForm(show, isEdit = false) {
-    if (show) {
-      recipeFormContainer.classList.remove("hidden");
-      if (isEdit) {
-        formTitle.textContent = "Edit Recipe";
-        formSubmitButton.textContent = "Save Changes";
-      } else {
-        formTitle.textContent = "Add a New Recipe";
-        formSubmitButton.textContent = "Add Recipe";
-        recipeForm.reset(); // Clear the form for new input
-      }
-    } else {
-      recipeFormContainer.classList.add("hidden");
-      editingRecipeId = null; // Reset editing state
-    }
+  // Update the category dropdown options
+  function updateCategoryDropdown() {
+    const uniqueCategories = [...new Set(allRecipes.map((recipe) => recipe.category))];
+    categoryDropdown.innerHTML = `<option value="">All Categories</option>`;
+    uniqueCategories.forEach((category) => {
+      const option = document.createElement("option");
+      option.value = category;
+      option.textContent = category;
+      categoryDropdown.appendChild(option);
+    });
   }
 
   // Add/Edit Recipe
@@ -121,11 +135,10 @@ document.addEventListener("DOMContentLoaded", () => {
           const updatedRecipe = await response.json();
           console.log("Recipe updated:", updatedRecipe);
 
-          // Update the recipe in the list
           allRecipes = allRecipes.map((r) =>
             r.id === editingRecipeId || r.recipeID === editingRecipeId ? updatedRecipe : r
           );
-          displayRecipes([updatedRecipe]); // Show only the edited recipe
+          displayRecipes(allRecipes); // Refresh all recipes
           toggleForm(false);
         }
       } else {
@@ -141,7 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("New recipe added:", newRecipe);
 
           allRecipes.push(newRecipe);
-          displayRecipes([newRecipe]); // Only show the new recipe
+          displayRecipes(allRecipes); // Refresh all recipes
+          updateCategoryDropdown(); // Update dropdown with new category
           toggleForm(false);
         }
       }
@@ -240,6 +254,17 @@ document.addEventListener("DOMContentLoaded", () => {
     displayRecipes(allRecipes);
   });
 
+  // Filter Recipes by Category
+  categoryDropdown.addEventListener("change", () => {
+    const selectedCategory = categoryDropdown.value;
+    if (selectedCategory === "") {
+      displayRecipes(allRecipes);
+    } else {
+      const filteredRecipes = allRecipes.filter((recipe) => recipe.category === selectedCategory);
+      displayRecipes(filteredRecipes);
+    }
+  });
+
   // Search Recipes
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
@@ -263,3 +288,4 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fetch recipes on page load
   fetchRecipes();
 });
+
