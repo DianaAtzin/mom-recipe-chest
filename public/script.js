@@ -10,11 +10,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const formSubmitButton = document.getElementById("form-submit-button");
   const cancelFormButton = document.getElementById("cancel-form");
 
-  let allRecipes = []; // Store recipes
+  let allRecipes = []; // Store all recipes
   let editingRecipeId = null; // Track the recipe being edited
 
-  // Hide recipes by default
+  // Hide the recipe list and form by default
   recipeList.style.display = "none";
+  recipeFormContainer.classList.add("hidden");
 
   // Fetch recipes from the server
   async function fetchRecipes() {
@@ -30,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Display recipes in the list
   function displayRecipes(recipes) {
     recipeList.innerHTML = "";
+
     if (recipes.length === 0) {
       const noResultsMessage = document.createElement("div");
       noResultsMessage.classList.add("bg-yellow-100", "text-yellow-800", "p-4", "rounded", "shadow");
@@ -66,10 +68,11 @@ document.addEventListener("DOMContentLoaded", () => {
         recipeList.appendChild(recipeDiv);
       });
     }
+
     recipeList.style.display = "block";
   }
 
-  // Toggle the Add/Edit form
+  // Toggle Add/Edit Form
   function toggleForm(show, isEdit = false) {
     if (show) {
       recipeFormContainer.classList.remove("hidden");
@@ -79,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         formTitle.textContent = "Add a New Recipe";
         formSubmitButton.textContent = "Add Recipe";
-        recipeForm.reset(); // Clear form for new recipe
+        recipeForm.reset(); // Clear the form for new input
       }
     } else {
       recipeFormContainer.classList.add("hidden");
@@ -87,42 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Show form when Add Recipe button is clicked
-  showAddFormButton.addEventListener("click", () => {
-    toggleForm(true);
-  });
-
-  // Hide form when Cancel button is clicked
-  cancelFormButton.addEventListener("click", () => {
-    toggleForm(false);
-  });
-
-  // Handle edit button clicks
-  recipeList.addEventListener("click", (e) => {
-    if (e.target.classList.contains("edit-button")) {
-      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
-      const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
-
-      if (recipe) {
-        console.log("Editing recipe:", recipe);
-        editingRecipeId = recipeId;
-
-        document.getElementById("recipe-name").value = recipe.name;
-        document.getElementById("recipe-description").value = recipe.description;
-        document.getElementById("recipe-ingredients").value = recipe.ingredients
-          .map((ing) => `${ing.quantity} ${ing.ingredientName}`)
-          .join(", ");
-        document.getElementById("recipe-instructions").value = recipe.instructions;
-        document.getElementById("recipe-category").value = recipe.category;
-
-        toggleForm(true, true); // Show form in edit mode
-      } else {
-        console.error("Recipe not found for editing. ID:", recipeId);
-      }
-    }
-  });
-
-  // Submit the form (add or edit)
+  // Add/Edit Recipe
   recipeForm.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -137,14 +105,12 @@ document.addEventListener("DOMContentLoaded", () => {
       category: document.getElementById("recipe-category").value,
       favorite: editingRecipeId
         ? allRecipes.find((r) => r.id === editingRecipeId || r.recipeID === editingRecipeId)?.favorite || false
-        : false, // Preserve favorite status during edit
+        : false, // Preserve favorite state during edit
     };
-
-    console.log("Form submitted with data:", recipeData);
 
     try {
       if (editingRecipeId) {
-        console.log("Updating recipe with ID:", editingRecipeId);
+        // Edit recipe
         const response = await fetch(`/api/recipes/${editingRecipeId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -153,20 +119,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (response.ok) {
           const updatedRecipe = await response.json();
-          console.log("Updated recipe from server:", updatedRecipe);
+          console.log("Recipe updated:", updatedRecipe);
 
+          // Update the recipe in the list
           allRecipes = allRecipes.map((r) =>
             r.id === editingRecipeId || r.recipeID === editingRecipeId ? updatedRecipe : r
           );
-          console.log("All recipes after edit:", allRecipes);
-
-          displayRecipes(allRecipes);
+          displayRecipes([updatedRecipe]); // Show only the edited recipe
           toggleForm(false);
-        } else {
-          console.error("Failed to update recipe with ID:", editingRecipeId);
         }
       } else {
-        console.log("Adding new recipe");
+        // Add new recipe
         const response = await fetch("/api/recipes", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -178,10 +141,8 @@ document.addEventListener("DOMContentLoaded", () => {
           console.log("New recipe added:", newRecipe);
 
           allRecipes.push(newRecipe);
-          displayRecipes(allRecipes);
+          displayRecipes([newRecipe]); // Only show the new recipe
           toggleForm(false);
-        } else {
-          console.error("Failed to add new recipe");
         }
       }
     } catch (error) {
@@ -189,14 +150,65 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Toggle favorite status
+  // Handle Edit Button
+  recipeList.addEventListener("click", (e) => {
+    if (e.target.classList.contains("edit-button")) {
+      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
+      const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
+
+      if (recipe) {
+        editingRecipeId = recipeId;
+        document.getElementById("recipe-name").value = recipe.name;
+        document.getElementById("recipe-description").value = recipe.description;
+        document.getElementById("recipe-ingredients").value = recipe.ingredients
+          .map((ing) => `${ing.quantity} ${ing.ingredientName}`)
+          .join(", ");
+        document.getElementById("recipe-instructions").value = recipe.instructions;
+        document.getElementById("recipe-category").value = recipe.category;
+
+        toggleForm(true, true); // Open the form in edit mode
+      }
+    }
+  });
+
+  // Show Add Form Button
+  showAddFormButton.addEventListener("click", () => {
+    toggleForm(true); // Open the add form
+  });
+
+  // Cancel Form Button
+  cancelFormButton.addEventListener("click", () => {
+    toggleForm(false); // Hide the form
+  });
+
+  // Handle Delete Button
+  recipeList.addEventListener("click", async (e) => {
+    if (e.target.classList.contains("delete-button")) {
+      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
+
+      try {
+        const response = await fetch(`/api/recipes/${recipeId}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          console.log(`Recipe with ID ${recipeId} deleted`);
+          allRecipes = allRecipes.filter((r) => r.id !== recipeId && r.recipeID !== recipeId);
+          displayRecipes(allRecipes);
+        }
+      } catch (error) {
+        console.error("Error deleting recipe:", error);
+      }
+    }
+  });
+
+  // Toggle Favorite
   recipeList.addEventListener("click", async (e) => {
     if (e.target.classList.contains("favorite-star")) {
       const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
       const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
 
       if (recipe) {
-        console.log("Toggling favorite for recipe:", recipe);
         recipe.favorite = !recipe.favorite;
 
         try {
@@ -207,10 +219,8 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           if (response.ok) {
-            console.log("Favorite status updated on server");
+            console.log(`Favorite status updated for recipe ID ${recipeId}`);
             displayRecipes(allRecipes);
-          } else {
-            console.error("Failed to update favorite status");
           }
         } catch (error) {
           console.error("Error updating favorite status:", error);
@@ -219,35 +229,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Delete a recipe
-  recipeList.addEventListener("click", async (e) => {
-    if (e.target.classList.contains("delete-button")) {
-      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
-
-      if (isNaN(recipeId)) {
-        console.error("Invalid recipe ID:", e.target.getAttribute("data-id"));
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/recipes/${recipeId}`, {
-          method: "DELETE",
-        });
-
-        if (response.ok) {
-          console.log("Deleted recipe with ID:", recipeId);
-          allRecipes = allRecipes.filter((r) => r.id !== recipeId && r.recipeID !== recipeId);
-          displayRecipes(allRecipes); // Refresh the list after deletion
-        } else {
-          console.error(`Failed to delete recipe with ID ${recipeId}`);
-        }
-      } catch (error) {
-        console.error("Error deleting recipe:", error);
-      }
-    }
+  // Show Favorite Recipes
+  showFavoritesButton.addEventListener("click", () => {
+    const favoriteRecipes = allRecipes.filter((recipe) => recipe.favorite);
+    displayRecipes(favoriteRecipes);
   });
 
-  // Search recipes
+  // Show All Recipes
+  allButton.addEventListener("click", () => {
+    displayRecipes(allRecipes);
+  });
+
+  // Search Recipes
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
 
@@ -265,17 +258,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       displayRecipes(filteredRecipes); // Display filtered results
     }
-  });
-
-  // Show all recipes when "All" button is clicked
-  allButton.addEventListener("click", () => {
-    displayRecipes(allRecipes);
-  });
-
-  // Show favorite recipes
-  showFavoritesButton.addEventListener("click", () => {
-    const favoriteRecipes = allRecipes.filter((recipe) => recipe.favorite);
-    displayRecipes(favoriteRecipes);
   });
 
   // Fetch recipes on page load
