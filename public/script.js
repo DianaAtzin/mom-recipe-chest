@@ -165,25 +165,32 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Handle Edit Button
-  recipeList.addEventListener("click", (e) => {
-    if (e.target.classList.contains("edit-button")) {
-      const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
-      const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
+recipeList.addEventListener("click", (e) => {
+  if (e.target.classList.contains("edit-button")) {
+    const recipeId = parseInt(e.target.getAttribute("data-id"), 10);
+    const recipe = allRecipes.find((r) => r.id === recipeId || r.recipeID === recipeId);
 
-      if (recipe) {
-        editingRecipeId = recipeId;
-        document.getElementById("recipe-name").value = recipe.name;
-        document.getElementById("recipe-description").value = recipe.description;
-        document.getElementById("recipe-ingredients").value = recipe.ingredients
-          .map((ing) => `${ing.quantity} ${ing.ingredientName}`)
-          .join(", ");
-        document.getElementById("recipe-instructions").value = recipe.instructions;
-        document.getElementById("recipe-category").value = recipe.category;
+    if (recipe) {
+      editingRecipeId = recipeId;
 
-        toggleForm(true, true); // Open the form in edit mode
-      }
+      // Populate form fields with the recipe details
+      document.getElementById("recipe-name").value = recipe.name;
+      document.getElementById("recipe-description").value = recipe.description;
+      document.getElementById("recipe-ingredients").value = recipe.ingredients
+        .map((ing) => `${ing.quantity} ${ing.ingredientName}`)
+        .join(", ");
+      document.getElementById("recipe-instructions").value = recipe.instructions;
+      document.getElementById("recipe-category").value = recipe.category;
+
+      // Show the form in edit mode
+      toggleForm(true, true);
+
+      // Scroll to the form
+      recipeFormContainer.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  });
+  }
+});
+
 
   // Show Add Form Button
   showAddFormButton.addEventListener("click", () => {
