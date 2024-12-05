@@ -26,9 +26,10 @@
       <p class="mb-2">This app helps you manage your family recipes and keep track of your ingredient inventory. Here's how to get started:</p>
       <ul class="list-disc list-inside mb-4">
         <li>Use the <strong>Search</strong> bar to find recipes by name, category, or ingredient.</li>
-        <li>Click the <strong>Add Recipe</strong> form below to input your favorite recipes.</li>
-        <li>Click the <strong>Edit</strong> button on any recipe to modify its details, update ingredients, or adjust instructions. Don't forget to save your changes!</li>
-        <li>Switch to the <strong>Inventory</strong> tab to manage your ingredients and create shopping lists.</li>
+        <li>Click <strong>Add Recipe</strong> to create new recipes.</li>
+        <li>Click <strong>Edit</strong> on any recipe to modify its details, ingredients, or instructions. Save your changes!</li>
+        <li>Switch to the <strong>Inventory</strong> tab to manage ingredients and shopping lists.</li>
+        <li>Mark recipes as <strong>Favorites</strong> for quick access.</li>
       </ul>
     </section>
 
@@ -39,15 +40,18 @@
       <button class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
     </div>
 
-    <!-- Favorites Filter -->
-    <div class="flex justify-end mb-4">
+    <!-- Favorites Filter and Add Recipe Button -->
+    <div class="flex justify-end gap-4 mb-4">
       <button id="show-favorites" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
         Show Favorites
       </button>
+      <button id="show-add-form" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        Add Recipe
+      </button>
     </div>
 
-    <!-- Add/Edit Recipe Form -->
-    <div class="bg-white p-4 rounded shadow mb-4">
+    <!-- Add/Edit Recipe Form (Hidden Initially) -->
+    <div id="recipe-form-container" class="hidden bg-white p-4 rounded shadow mb-4">
       <h2 id="form-title" class="text-xl font-semibold mb-2">Add a New Recipe</h2>
       <form id="add-recipe-form">
         <label for="recipe-name" class="block font-medium mb-1">Recipe Name</label>
@@ -65,8 +69,10 @@
         <label for="recipe-category" class="block font-medium mb-1">Category</label>
         <input type="text" id="recipe-category" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., Main Course, Dessert" required />
 
-        <button type="submit" id="form-submit-button" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Recipe</button>
-        <!-- <button type="button" id="cancel-edit-button" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 hidden">Cancel</button> -->
+        <div class="flex gap-4">
+          <button type="submit" id="form-submit-button" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Recipe</button>
+          <button type="button" id="cancel-form" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cancel</button>
+        </div>
       </form>
     </div>
 
@@ -86,4 +92,3 @@
   <script src="script.js"></script>
 </body>
 </html>
-
