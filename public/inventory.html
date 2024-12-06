@@ -28,7 +28,7 @@
 
     <!-- Search and Add Ingredient Section -->
     <div class="flex items-center mb-4">
-      <button class="bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-l">All</button>
+      <button class="all-button bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-l">All</button>
       <input type="text" id="search-ingredients" class="flex-grow p-2 border border-gray-300" placeholder="Search for an ingredient..." />
       <button class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
     </div>
@@ -43,15 +43,20 @@
         <label for="ingredient-quantity" class="block font-medium mb-1">Quantity</label>
         <input type="text" id="ingredient-quantity" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., 2 lbs, 1 cup" required />
 
-        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Ingredient</button>
+        <div class="flex gap-4">
+          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Ingredient</button>
+          <button type="reset" id="cancel-add" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cancel</button>
+        </div>
       </form>
     </div>
 
-    <!-- Inventory List -->
-    <div class="bg-white p-4 rounded shadow mb-4">
-      <h2 class="text-xl font-semibold mb-2">Inventory List</h2>
-      <div id="inventory-list" class="mt-4">
-        <!-- Ingredients will be dynamically displayed here -->
+    <!-- Inventory List Section -->
+    <div id="inventory-section" class="hidden">
+      <div class="bg-white p-4 rounded shadow mb-4">
+        <h2 class="text-xl font-semibold mb-2">Inventory List</h2>
+        <div id="inventory-list" class="mt-4">
+          <!-- Ingredients will be dynamically displayed here -->
+        </div>
       </div>
     </div>
 
