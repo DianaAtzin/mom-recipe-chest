@@ -11,10 +11,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("search-ingredients");
   const inventorySection = document.querySelector("#inventory-section");
   const alertMessage = document.getElementById("alert-message");
+  const formSubmitButton = addIngredientForm.querySelector("button[type='submit']");
 
   let allIngredients = [];
   let editingIngredientName = null;
 
+  // Hide inventory section by default
   inventorySection.classList.add("hidden");
 
   async function fetchInventory() {
@@ -68,6 +70,7 @@ document.addEventListener("DOMContentLoaded", () => {
     inventoryList.appendChild(itemDiv);
   }
 
+  // Add or Edit Ingredient
   addIngredientForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const ingredientName = document.getElementById("ingredient-name").value.trim();
@@ -75,18 +78,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!ingredientName || !quantity) {
       alert("Both ingredient name and quantity are required.");
-      return;
-    }
-
-    const existingIngredient = allIngredients.find(
-      (item) => item.ingredientName.toLowerCase() === ingredientName.toLowerCase()
-    );
-
-    if (existingIngredient && !editingIngredientName) {
-      showDuplicateAlert(ingredientName);
-      document.getElementById("ingredient-name").value = existingIngredient.ingredientName;
-      document.getElementById("ingredient-quantity").value = existingIngredient.quantity;
-      editingIngredientName = existingIngredient.ingredientName;
       return;
     }
 
@@ -105,10 +96,20 @@ document.addEventListener("DOMContentLoaded", () => {
           displayIngredients(allIngredients);
           editingIngredientName = null;
           addIngredientForm.reset();
+          formSubmitButton.textContent = "Add Ingredient"; // Reset button text
         }
       } catch (error) {
         console.error("Error updating ingredient:", error);
       }
+      return;
+    }
+
+    const existingIngredient = allIngredients.find(
+      (item) => item.ingredientName.toLowerCase() === ingredientName.toLowerCase()
+    );
+
+    if (existingIngredient) {
+      showDuplicateAlert(ingredientName);
       return;
     }
 
@@ -131,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Edit Button
   inventoryList.addEventListener("click", (e) => {
     if (e.target.classList.contains("edit-button")) {
       const ingredientName = e.target.getAttribute("data-name");
@@ -140,45 +142,57 @@ document.addEventListener("DOMContentLoaded", () => {
         editingIngredientName = ingredient.ingredientName;
         document.getElementById("ingredient-name").value = ingredient.ingredientName;
         document.getElementById("ingredient-quantity").value = ingredient.quantity;
+
         addFormContainer.classList.remove("hidden");
+        formSubmitButton.textContent = "Save Changes";
+
+        // Smooth scroll to form
+        addFormContainer.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
+  });
 
+  // Reset form when canceling
+  cancelAddFormButton.addEventListener("click", () => {
+    addFormContainer.classList.add("hidden");
+    addIngredientForm.reset();
+    editingIngredientName = null;
+    formSubmitButton.textContent = "Add Ingredient"; // Reset button text
+  });
+
+  // Delete Button
+  inventoryList.addEventListener("click", async (e) => {
     if (e.target.classList.contains("delete-button")) {
       const ingredientName = e.target.getAttribute("data-name");
 
-      fetch(`/api/inventory/${ingredientName}`, { method: "DELETE" })
-        .then((response) => {
-          if (response.ok) {
-            allIngredients = allIngredients.filter((i) => i.ingredientName !== ingredientName);
-            displayIngredients(allIngredients);
-          }
-        })
-        .catch((error) => console.error("Error deleting ingredient:", error));
+      try {
+        const response = await fetch(`/api/inventory/${ingredientName}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          allIngredients = allIngredients.filter((i) => i.ingredientName !== ingredientName);
+          displayIngredients(allIngredients);
+        }
+      } catch (error) {
+        console.error("Error deleting ingredient:", error);
+      }
     }
   });
 
-  showAddFormButton.addEventListener("click", () => {
-    addFormContainer.classList.remove("hidden");
-    addIngredientForm.reset();
-    editingIngredientName = null;
-  });
-
-  cancelAddFormButton.addEventListener("click", () => {
-    addFormContainer.classList.add("hidden");
-    editingIngredientName = null;
-  });
-
+  // Show All Ingredients
   allButton.addEventListener("click", () => {
     inventorySection.classList.remove("hidden");
     displayIngredients(allIngredients);
   });
 
+  // Hide Inventory List
   hideListButton.addEventListener("click", () => {
     inventorySection.classList.add("hidden");
     inventoryList.innerHTML = "";
   });
 
+  // Search Ingredients
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
 
@@ -190,7 +204,16 @@ document.addEventListener("DOMContentLoaded", () => {
     displayIngredients(filteredIngredients);
   });
 
+  // Show Add Form
+  showAddFormButton.addEventListener("click", () => {
+    addFormContainer.classList.remove("hidden");
+    addIngredientForm.reset();
+    editingIngredientName = null;
+    formSubmitButton.textContent = "Add Ingredient"; // Reset button text
+  });
+
   fetchInventory();
 });
+
 
 
