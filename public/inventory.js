@@ -4,14 +4,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const generateShoppingListBtn = document.getElementById("generate-shopping-list");
   const shoppingListDiv = document.getElementById("shopping-list");
   const allButton = document.querySelector(".all-button");
+  const hideListButton = document.getElementById("hide-list-button"); // Hide List Button
   const searchInput = document.getElementById("search-ingredients");
   const inventorySection = document.querySelector("#inventory-section");
 
   let allIngredients = [];
   let editingIngredientName = null;
 
+  // Hide inventory section by default
   inventorySection.classList.add("hidden");
 
+  // Fetch and display inventory
   async function fetchInventory() {
     try {
       const response = await fetch("/api/inventory");
@@ -53,6 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     inventoryList.appendChild(itemDiv);
   }
 
+  // Add or Edit Ingredient
   addIngredientForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const ingredientName = document.getElementById("ingredient-name").value.trim();
@@ -149,8 +153,17 @@ document.addEventListener("DOMContentLoaded", () => {
     displayIngredients(allIngredients);
   });
 
+  hideListButton.addEventListener("click", () => {
+    inventorySection.classList.add("hidden");
+    inventoryList.innerHTML = ""; // Clear the list when hiding
+  });
+
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
+
+    // Ensure inventory section is visible during search
+    inventorySection.classList.remove("hidden");
+
     const filteredIngredients = allIngredients.filter((item) =>
       item.ingredientName.toLowerCase().includes(query)
     );
@@ -159,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetchInventory();
 });
+
 
 
 
