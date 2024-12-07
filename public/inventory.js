@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const generateShoppingListBtn = document.getElementById("generate-shopping-list");
   const shoppingListDiv = document.getElementById("shopping-list");
   const shoppingListSection = document.getElementById("shopping-list-section");
+  const cancelShoppingListButton = document.getElementById("cancel-shopping-list");
   const allButton = document.querySelector(".all-button");
   const hideListButton = document.getElementById("hide-list-button");
   const searchInput = document.getElementById("search-ingredients");
@@ -16,11 +17,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let allIngredients = [];
   let editingIngredientName = null;
+  let allRecipes = []; // Store fetched recipes for shopping list generation
 
   // Hide inventory and shopping list sections by default
   inventorySection.classList.add("hidden");
   shoppingListSection.classList.add("hidden");
 
+  // Fetch inventory from the server
   async function fetchInventory() {
     try {
       const response = await fetch("/api/inventory");
@@ -28,6 +31,17 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Fetched inventory:", allIngredients);
     } catch (error) {
       console.error("Error fetching inventory:", error);
+    }
+  }
+
+  // Fetch recipes from the server
+  async function fetchRecipes() {
+    try {
+      const response = await fetch("/api/recipes"); // Adjust the API endpoint if necessary
+      allRecipes = await response.json();
+      console.log("Fetched recipes:", allRecipes);
+    } catch (error) {
+      console.error("Error fetching recipes:", error);
     }
   }
 
@@ -98,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
           displayIngredients(allIngredients);
           editingIngredientName = null;
           addIngredientForm.reset();
-          formSubmitButton.textContent = "Add Ingredient";
+          formSubmitButton.textContent = "Add Ingredient"; // Reset button text
         }
       } catch (error) {
         console.error("Error updating ingredient:", error);
@@ -174,14 +188,158 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Handle Generate Shopping List Button
-  generateShoppingListBtn.addEventListener("click", () => {
-    shoppingListDiv.innerHTML = `
-      <p class="bg-yellow-200 text-yellow-800 p-4 rounded shadow">
-        The shopping list feature is under construction. Stay tuned for updates!
-      </p>
+  // Merge Ingredients from Selected Recipes 
+  function mergeIngredientsFromRecipes(selectedRecipes) {
+    const mergedIngredients = {};
+  
+    selectedRecipes.forEach((recipe) => {
+      recipe.ingredients.forEach((ingredient) => {
+        const name = ingredient.ingredientName.toLowerCase(); // Normalize by lowercase
+        const quantity = parseFloat(ingredient.quantity) || 0; // Convert quantity to a number if possible
+  
+        if (!mergedIngredients[name]) {
+          mergedIngredients[name] = { ingredientName: ingredient.ingredientName, quantity };
+        } else {
+          mergedIngredients[name].quantity += quantity; // Add quantities if the ingredient already exists
+        }
+      });
+    });
+  
+    return Object.values(mergedIngredients); // Return as an array
+  }
+
+
+// Generate Shopping List Section
+function populateShoppingListSection() {
+  // Clear any existing shopping list content
+  shoppingListDiv.innerHTML = "";
+
+  // Add instructions
+  const instructions = document.createElement("p");
+  instructions.classList.add("mb-4");
+  instructions.textContent = "Select the recipes you want to include in your shopping list:";
+  shoppingListDiv.appendChild(instructions);
+
+  // Add recipe checkboxes
+  const recipeList = document.createElement("ul");
+  recipeList.classList.add("list-inside");
+
+  allRecipes.forEach((recipe) => {
+    const listItem = document.createElement("li");
+    listItem.classList.add("mb-2");
+    listItem.innerHTML = `
+      <label class="flex items-center gap-2">
+        <input type="checkbox" class="recipe-checkbox" value="${recipe.name}">
+        <span>${recipe.name}</span>
+      </label>
     `;
+    recipeList.appendChild(listItem);
+  });
+
+  shoppingListDiv.appendChild(recipeList);
+
+  // Create a container for the buttons
+  const buttonContainer = document.createElement("div");
+  buttonContainer.className = "flex gap-4 mt-4";
+
+  // Generate Shopping List Button
+  const generateButton = document.createElement("button");
+  generateButton.id = "create-shopping-list";
+  generateButton.className = "bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600";
+  generateButton.textContent = "Create";
+
+  // Attach generate logic
+  generateButton.addEventListener("click", generateShoppingList);
+
+  // Cancel Button
+  const cancelButton = document.createElement("button");
+  cancelButton.id = "cancel-shopping-list";
+  cancelButton.className = "bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600";
+  cancelButton.textContent = "Cancel";
+
+  // Attach cancel logic
+  cancelButton.addEventListener("click", () => {
+    shoppingListSection.classList.add("hidden");
+    shoppingListDiv.innerHTML = ""; // Clear the shopping list
+  });
+
+  // Append buttons to the container
+  buttonContainer.appendChild(generateButton);
+  buttonContainer.appendChild(cancelButton);
+
+  // Append the container to the shopping list div
+  shoppingListDiv.appendChild(buttonContainer);
+
+  // Ensure the shopping list section is visible
+  shoppingListSection.classList.remove("hidden");
+}
+
+
+
+
+
+// Generate Shopping List
+function generateShoppingList() {
+  const selectedRecipes = Array.from(
+    document.querySelectorAll(".recipe-checkbox:checked")
+  ).map((checkbox) => {
+    const recipeName = checkbox.value;
+    return allRecipes.find((recipe) => recipe.name === recipeName);
+  });
+
+  if (selectedRecipes.length === 0) {
+    shoppingListDiv.innerHTML = `<p class="text-red-500">Please select at least one recipe to generate the shopping list.</p>`;
+    return;
+  }
+
+  // Merge ingredients from selected recipes
+  const mergedIngredients = mergeIngredientsFromRecipes(selectedRecipes);
+
+  // Clear the shopping list but keep the cancel button
+  shoppingListDiv.innerHTML = ""; // Clear the shopping list content
+
+  // Add the merged ingredients to the shopping list
+  mergedIngredients.forEach((ingredient) => {
+    const itemDiv = document.createElement("div");
+    itemDiv.classList.add("bg-gray-200", "p-4", "mb-2", "rounded");
+    itemDiv.textContent = `${ingredient.ingredientName}: ${ingredient.quantity}`;
+    shoppingListDiv.appendChild(itemDiv);
+  });
+
+  // Add Cancel Button
+  const cancelButton = document.createElement("button");
+  cancelButton.id = "cancel-shopping-list";
+  cancelButton.className = "bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mt-4";
+  cancelButton.textContent = "Cancel";
+
+  // Attach cancel logic
+  cancelButton.addEventListener("click", () => {
+    shoppingListSection.classList.add("hidden");
+    shoppingListDiv.innerHTML = ""; // Clear the shopping list
+  });
+
+  shoppingListDiv.appendChild(cancelButton);
+
+  shoppingListSection.classList.remove("hidden");
+}
+
+
+  // Generate Shopping List Button
+  generateShoppingListBtn.addEventListener("click", () => {
     shoppingListSection.classList.remove("hidden");
+    populateShoppingListSection(); // Ensure recipe checkboxes are populated
+    shoppingListSection.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+  
+
+  
+
+  // Cancel Button for Add Form
+  cancelAddFormButton.addEventListener("click", () => {
+    addFormContainer.classList.add("hidden");
+    addIngredientForm.reset();
+    editingIngredientName = null;
+    formSubmitButton.textContent = "Add Ingredient";
   });
 
   // Show All Ingredients
@@ -194,20 +352,6 @@ document.addEventListener("DOMContentLoaded", () => {
   hideListButton.addEventListener("click", () => {
     inventorySection.classList.add("hidden");
     inventoryList.innerHTML = "";
-  });
-
-  // Hide Shopping List Section
-  shoppingListSection.addEventListener("click", () => {
-    shoppingListSection.classList.add("hidden");
-    shoppingListDiv.innerHTML = "";
-  });
-
-  // Cancel Button for Add Form
-  cancelAddFormButton.addEventListener("click", () => {
-    addFormContainer.classList.add("hidden");
-    addIngredientForm.reset();
-    editingIngredientName = null;
-    formSubmitButton.textContent = "Add Ingredient";
   });
 
   // Search Ingredients
@@ -231,6 +375,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   fetchInventory();
+  fetchRecipes(); // Fetch recipes for shopping list generation
 });
 
 
