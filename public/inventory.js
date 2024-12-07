@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const cancelAddFormButton = document.getElementById("cancel-add-form");
   const generateShoppingListBtn = document.getElementById("generate-shopping-list");
   const shoppingListDiv = document.getElementById("shopping-list");
+  const shoppingListSection = document.getElementById("shopping-list-section");
   const allButton = document.querySelector(".all-button");
   const hideListButton = document.getElementById("hide-list-button");
   const searchInput = document.getElementById("search-ingredients");
@@ -16,8 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let allIngredients = [];
   let editingIngredientName = null;
 
-  // Hide inventory section by default
+  // Hide inventory and shopping list sections by default
   inventorySection.classList.add("hidden");
+  shoppingListSection.classList.add("hidden");
 
   async function fetchInventory() {
     try {
@@ -96,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
           displayIngredients(allIngredients);
           editingIngredientName = null;
           addIngredientForm.reset();
-          formSubmitButton.textContent = "Add Ingredient"; // Reset button text
+          formSubmitButton.textContent = "Add Ingredient";
         }
       } catch (error) {
         console.error("Error updating ingredient:", error);
@@ -152,14 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Reset form when canceling
-  cancelAddFormButton.addEventListener("click", () => {
-    addFormContainer.classList.add("hidden");
-    addIngredientForm.reset();
-    editingIngredientName = null;
-    formSubmitButton.textContent = "Add Ingredient"; // Reset button text
-  });
-
   // Delete Button
   inventoryList.addEventListener("click", async (e) => {
     if (e.target.classList.contains("delete-button")) {
@@ -180,16 +174,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Handle Generate Shopping List Button
+  generateShoppingListBtn.addEventListener("click", () => {
+    shoppingListDiv.innerHTML = `
+      <p class="bg-yellow-200 text-yellow-800 p-4 rounded shadow">
+        The shopping list feature is under construction. Stay tuned for updates!
+      </p>
+    `;
+    shoppingListSection.classList.remove("hidden");
+  });
+
   // Show All Ingredients
   allButton.addEventListener("click", () => {
     inventorySection.classList.remove("hidden");
-    displayIngredients(allIngredients);
+    displayIngredients(allIngredients); // Display all ingredients
   });
 
   // Hide Inventory List
   hideListButton.addEventListener("click", () => {
     inventorySection.classList.add("hidden");
     inventoryList.innerHTML = "";
+  });
+
+  // Hide Shopping List Section
+  shoppingListSection.addEventListener("click", () => {
+    shoppingListSection.classList.add("hidden");
+    shoppingListDiv.innerHTML = "";
+  });
+
+  // Cancel Button for Add Form
+  cancelAddFormButton.addEventListener("click", () => {
+    addFormContainer.classList.add("hidden");
+    addIngredientForm.reset();
+    editingIngredientName = null;
+    formSubmitButton.textContent = "Add Ingredient";
   });
 
   // Search Ingredients
@@ -214,6 +232,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   fetchInventory();
 });
+
 
 
 
