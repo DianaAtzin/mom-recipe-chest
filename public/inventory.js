@@ -1,20 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
   const inventoryList = document.getElementById("inventory-list");
   const addIngredientForm = document.getElementById("add-ingredient-form");
-  const generateShoppingListBtn = document.getElementById("generate-shopping-list");
-  const shoppingListDiv = document.getElementById("shopping-list");
+  const addIngredientContainer = document.getElementById("add-ingredient-container");
+  const showAddFormButton = document.getElementById("show-add-form");
+  const cancelAddButton = document.getElementById("cancel-add");
   const allButton = document.querySelector(".all-button");
-  const hideListButton = document.getElementById("hide-list-button"); // Hide List Button
+  const hideListButton = document.getElementById("hide-list-button");
   const searchInput = document.getElementById("search-ingredients");
   const inventorySection = document.querySelector("#inventory-section");
 
   let allIngredients = [];
   let editingIngredientName = null;
 
-  // Hide inventory section by default
   inventorySection.classList.add("hidden");
+  addIngredientContainer.classList.add("hidden");
 
-  // Fetch and display inventory
   async function fetchInventory() {
     try {
       const response = await fetch("/api/inventory");
@@ -56,7 +56,6 @@ document.addEventListener("DOMContentLoaded", () => {
     inventoryList.appendChild(itemDiv);
   }
 
-  // Add or Edit Ingredient
   addIngredientForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const ingredientName = document.getElementById("ingredient-name").value.trim();
@@ -82,6 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
           displayIngredients(allIngredients);
           editingIngredientName = null;
           addIngredientForm.reset();
+          addIngredientContainer.classList.add("hidden");
         }
       } catch (error) {
         console.error("Error updating ingredient:", error);
@@ -116,6 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
         appendIngredientToList(newIngredient);
         inventorySection.classList.remove("hidden");
         addIngredientForm.reset();
+        addIngredientContainer.classList.add("hidden");
       }
     } catch (error) {
       console.error("Error saving ingredient:", error);
@@ -131,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
         editingIngredientName = ingredient.ingredientName;
         document.getElementById("ingredient-name").value = ingredient.ingredientName;
         document.getElementById("ingredient-quantity").value = ingredient.quantity;
+        addIngredientContainer.classList.remove("hidden");
       }
     }
 
@@ -155,19 +157,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
   hideListButton.addEventListener("click", () => {
     inventorySection.classList.add("hidden");
-    inventoryList.innerHTML = ""; // Clear the list when hiding
+    inventoryList.innerHTML = "";
   });
 
   searchInput.addEventListener("input", () => {
     const query = searchInput.value.trim().toLowerCase();
-
-    // Ensure inventory section is visible during search
     inventorySection.classList.remove("hidden");
-
     const filteredIngredients = allIngredients.filter((item) =>
       item.ingredientName.toLowerCase().includes(query)
     );
     displayIngredients(filteredIngredients);
+  });
+
+  showAddFormButton.addEventListener("click", () => {
+    addIngredientContainer.classList.remove("hidden");
+    addIngredientForm.reset();
+    editingIngredientName = null;
+  });
+
+  cancelAddButton.addEventListener("click", () => {
+    addIngredientContainer.classList.add("hidden");
+    addIngredientForm.reset();
   });
 
   fetchInventory();

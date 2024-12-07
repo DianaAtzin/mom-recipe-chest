@@ -26,16 +26,23 @@
       <p>Here, you can keep track of ingredients you have on hand, add new ones, and generate a shopping list based on recipes you want to make.</p>
     </section>
 
-    <!-- Search and Add Ingredient Section -->
+    <!-- Search Bar and Add Ingredient Button -->
     <div class="flex items-center mb-4">
       <button class="all-button bg-green-500 text-white hover:bg-green-600 px-4 py-2 rounded-l">All</button>
       <input type="text" id="search-ingredients" class="flex-grow p-2 border border-gray-300" placeholder="Search for an ingredient..." />
       <button class="bg-blue-500 text-white px-4 py-2 rounded-r hover:bg-blue-600">Search</button>
     </div>
 
-    <!-- Add Ingredient Form -->
-    <div class="bg-white p-4 rounded shadow mb-4">
-      <h2 class="text-xl font-semibold mb-2">Add a New Ingredient</h2>
+    <!-- Add Ingredient Button -->
+    <div class="flex justify-end mb-4">
+      <button id="show-add-form" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+        Add Ingredient
+      </button>
+    </div>
+
+    <!-- Add/Edit Ingredient Form (Initially Hidden) -->
+    <div id="add-ingredient-container" class="hidden bg-white p-4 rounded shadow mb-4">
+      <h2 id="form-title" class="text-xl font-semibold mb-2">Add a New Ingredient</h2>
       <form id="add-ingredient-form">
         <label for="ingredient-name" class="block font-medium mb-1">Ingredient Name</label>
         <input type="text" id="ingredient-name" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="Enter ingredient name" required />
@@ -44,25 +51,24 @@
         <input type="text" id="ingredient-quantity" class="w-full p-2 border border-gray-300 rounded mb-3" placeholder="E.g., 2 lbs, 1 cup" required />
 
         <div class="flex gap-4">
-          <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Ingredient</button>
-          <button type="reset" id="cancel-add" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cancel</button>
+          <button type="submit" id="form-submit-button" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Add Ingredient</button>
+          <button type="button" id="cancel-add" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Cancel</button>
         </div>
       </form>
     </div>
 
+    <!-- Inventory List Section -->
     <div id="inventory-section" class="hidden">
       <div class="bg-white p-4 rounded shadow mb-4">
         <h2 class="text-xl font-semibold mb-2">Inventory List</h2>
         <div id="inventory-list" class="mt-4">
           <!-- Ingredients will be dynamically displayed here -->
         </div>
-        <!-- New Hide List Button -->
         <button id="hide-list-button" class="bg-yellow-500 text-white px-4 py-2 rounded hover:bg-yellow-600">
           Hide List
         </button>
       </div>
     </div>
-    
 
     <!-- Generate Shopping List Section -->
     <div class="bg-white p-4 rounded shadow mb-4">
